@@ -351,7 +351,7 @@ class InvoicepdfOxOrder extends InvoicepdfOxOrder_parent
                 $iStartPos = $this->pdfheaderplus($oPdf);
                 $oPdf->setFont($oPdfBlock->getFont(), '', 10);
             } else {
-                $iStartPos = $iStartPos + 4;
+                $iStartPos = $iStartPos + 6;
             }
 
             // sold amount
@@ -363,13 +363,13 @@ class InvoicepdfOxOrder extends InvoicepdfOxOrder_parent
 
             // product title
             $oPdf->setFont($oPdfBlock->getFont(), '', 10);
-            $oPdf->text(45, $iStartPos, substr(strip_tags($this->_replaceExtendedChars($oOrderArt->oxorderarticles__oxtitle->getRawValue(), true)), 0, 58));
+            $oPdf->text(55, $iStartPos, substr(strip_tags($this->_replaceExtendedChars($oOrderArt->oxorderarticles__oxtitle->getRawValue(), true)), 0, 38));
 
             if ($blShowPrice) {
                 $oLang = \OxidEsales\Eshop\Core\Registry::getLang();
 
                 // product VAT percent
-                $oPdf->text(140 - $oPdf->getStringWidth($oOrderArt->oxorderarticles__oxvat->value), $iStartPos, $oOrderArt->oxorderarticles__oxvat->value);
+                $oPdf->text(130 - $oPdf->getStringWidth($oOrderArt->oxorderarticles__oxvat->value), $iStartPos, $oOrderArt->oxorderarticles__oxvat->value);
 
                 // product price
 
@@ -484,8 +484,8 @@ class InvoicepdfOxOrder extends InvoicepdfOxOrder_parent
         $oPdf->setFont($oPdfBlock->getFont(), '', 8);
         $oPdf->text(15, $iTop, $this->translate('ORDER_OVERVIEW_PDF_AMOUNT'));
         $oPdf->text(30, $iTop, $this->translate('ORDER_OVERVIEW_PDF_ARTID'));
-        $oPdf->text(45, $iTop, $this->translate('ORDER_OVERVIEW_PDF_DESC'));
-        $oPdf->text(135, $iTop, $this->translate('ORDER_OVERVIEW_PDF_VAT'));
+        $oPdf->text(55, $iTop, $this->translate('ORDER_OVERVIEW_PDF_DESC'));
+        $oPdf->text(125, $iTop, $this->translate('ORDER_OVERVIEW_PDF_VAT'));
         $oPdf->text(148, $iTop, $this->translate('ORDER_OVERVIEW_PDF_UNITPRICE'));
         $sText = $this->translate('ORDER_OVERVIEW_PDF_ALLPRICE');
         $oPdf->text(195 - $oPdf->getStringWidth($sText), $iTop, $sText);

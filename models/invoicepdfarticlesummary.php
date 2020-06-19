@@ -64,7 +64,9 @@ class InvoicepdfArticleSummary extends InvoicepdfBlock
         $oLang = \OxidEsales\Eshop\Core\Registry::getLang();
 
         // products netto price
+        $iStartPos += 1;
         $this->line(15, $iStartPos + 1, 195, $iStartPos + 1);
+        $iStartPos += 2;
         $sNetSum = $oLang->formatCurrency($this->_oData->oxorder__oxtotalnetsum->value, $this->_oData->getCurrency()) . ' ' . $this->_oData->getCurrency()->name;
         $this->text(45, $iStartPos + 4, $this->_oData->translate('ORDER_OVERVIEW_PDF_ALLPRICENETTO'));
         $this->text(195 - $this->_oPdf->getStringWidth($sNetSum), $iStartPos + 4, $sNetSum);
@@ -73,6 +75,7 @@ class InvoicepdfArticleSummary extends InvoicepdfBlock
         $iCtr = 0;
         foreach ($this->_oData->getVats() as $iVat => $dVatPrice) {
             $iStartPos += 4 * $iCtr;
+            $iStartPos += 2;
             $sVATSum = $oLang->formatCurrency($dVatPrice, $this->_oData->getCurrency()) . ' ' . $this->_oData->getCurrency()->name;
             $this->text(45, $iStartPos + 8, $this->_oData->translate('ORDER_OVERVIEW_PDF_ZZGLVAT') . $iVat . $this->_oData->translate('ORDER_OVERVIEW_PDF_PERCENTSUM'));
             $this->text(195 - $this->_oPdf->getStringWidth($sVATSum), $iStartPos + 8, $sVATSum);
@@ -80,10 +83,11 @@ class InvoicepdfArticleSummary extends InvoicepdfBlock
         }
 
         // products brutto price
+        $iStartPos += 2;
         $sBrutPrice = $oLang->formatCurrency($this->_oData->oxorder__oxtotalbrutsum->value, $this->_oData->getCurrency()) . ' ' . $this->_oData->getCurrency()->name;
         $this->text(45, $iStartPos + 12, $this->_oData->translate('ORDER_OVERVIEW_PDF_ALLPRICEBRUTTO'));
         $this->text(195 - $this->_oPdf->getStringWidth($sBrutPrice), $iStartPos + 12, $sBrutPrice);
-        $iStartPos++;
+        $iStartPos += 2;
 
         // line separator
         $this->line(45, $iStartPos + 13, 195, $iStartPos + 13);
@@ -462,15 +466,17 @@ class InvoicepdfArticleSummary extends InvoicepdfBlock
         $this->_setWrappingInfo($siteH);
 
         // separating line
+        $siteH += 2;
         $this->line(15, $siteH, 195, $siteH);
-        $siteH += 4;
+        $siteH += 6;
 
         // total order sum
         $this->_setGrandTotalPriceInfo($siteH);
 
         // separating line
+        $siteH += 2;
         $this->line(15, $siteH, 195, $siteH);
-        $siteH += 4;
+        $siteH += 6;
 
         // payment method
         $this->_setPaymentMethodInfo($siteH);
