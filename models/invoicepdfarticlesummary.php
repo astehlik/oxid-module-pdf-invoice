@@ -481,9 +481,6 @@ class InvoicepdfArticleSummary extends InvoicepdfBlock
         // payment method
         $this->_setPaymentMethodInfo($siteH);
 
-        // pay until ...
-        $this->_setPayUntilInfo($siteH);
-
         return $siteH - $iStartPos;
     }
 }
