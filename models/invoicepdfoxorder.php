@@ -631,11 +631,6 @@ class InvoicepdfOxOrder extends InvoicepdfOxOrder_parent
         // sine separator
         $oPdf->line(15, $siteH + 2, 195, $siteH + 2);
         $siteH += 4;
-
-        // payment date
-        $oPdf->setFont($oPdfBlock->getFont(), '', 10);
-        $text = $this->translate('ORDER_OVERVIEW_PDF_PAYUPTO') . date('d.m.Y', strtotime('+' . $this->getPaymentTerm() . ' day', strtotime($this->oxorder__oxbilldate->value)));
-        $oPdf->text(15, $siteH + 4, $text);
     }
 
     /**
