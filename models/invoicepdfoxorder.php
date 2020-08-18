@@ -434,10 +434,10 @@ class InvoicepdfOxOrder extends InvoicepdfOxOrder_parent
         $oPdf->setFont($oPdfBlock->getFont(), '', 5);
         $oPdf->text(195 - $oPdf->getStringWidth($sText), 55, $sText);
 
-        // customer number
-        $sCustNr = $this->translate('ORDER_OVERVIEW_PDF_CUSTNR') . ' ' . $oUser->oxuser__oxcustnr->value;
+        // order number
+        $sOrderNr = $this->translate('ORDER_OVERVIEW_PDF_PURCHASENR') . ' ' . $this->oxorder__oxordernr->value;
         $oPdf->setFont($oPdfBlock->getFont(), '', 7);
-        $oPdf->text(195 - $oPdf->getStringWidth($sCustNr), 59, $sCustNr);
+        $oPdf->text(195 - $oPdf->getStringWidth($sOrderNr), 59, $sOrderNr);
 
         // setting position if delivery address is used
         if ($this->oxorder__oxdelsal->value) {
@@ -575,10 +575,10 @@ class InvoicepdfOxOrder extends InvoicepdfOxOrder_parent
         $oPdf->setFont($oPdfBlock->getFont(), '', 5);
         $oPdf->text(195 - $oPdf->getStringWidth($sText), 70, $sText);
 
-        // customer number
-        $sCustNr = $this->translate('ORDER_OVERVIEW_PDF_CUSTNR') . ' ' . $oUser->oxuser__oxcustnr->value;
+        // order number
+        $sOrderNr = $this->translate('ORDER_OVERVIEW_PDF_PURCHASENR') . ' ' . $this->oxorder__oxordernr->value;
         $oPdf->setFont($oPdfBlock->getFont(), '', 7);
-        $oPdf->text(195 - $oPdf->getStringWidth($sCustNr), 73, $sCustNr);
+        $oPdf->text(195 - $oPdf->getStringWidth($sOrderNr), 73, $sOrderNr);
 
         // shops city
         $sText = $oShop->oxshops__oxcity->getRawValue() . ', ' . date('d.m.Y');
