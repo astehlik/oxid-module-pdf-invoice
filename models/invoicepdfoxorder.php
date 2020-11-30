@@ -394,10 +394,16 @@ class InvoicepdfOxOrder extends InvoicepdfOxOrder_parent
         }
     }
 
+    protected function _addNewPage($oPdf)
+    {
+        $this->pdffooter($oPdf);
+        return $this->pdfHeader($oPdf);
+    }
+
     /**
      * Exporting standard invoice pdf
      *
-     * @param object $oPdf pdf document object
+     * @param InvoicepdfPDF $oPdf pdf document object
      */
     public function exportStandart($oPdf)
     {
@@ -505,8 +511,7 @@ class InvoicepdfOxOrder extends InvoicepdfOxOrder_parent
         $oArtSumm = oxNew('InvoicepdfArticleSummary', $this, $oPdf);
         $iHeight = $oArtSumm->generate($siteH);
         if ($siteH + $iHeight > 258) {
-            $this->pdfFooter($oPdf);
-            $iTop = $this->pdfHeader($oPdf);
+            $iTop = $this->_addNewPage($oPdf);
             $oArtSumm->ajustHeight($iTop - $siteH);
             $siteH = $iTop;
         }
@@ -514,13 +519,153 @@ class InvoicepdfOxOrder extends InvoicepdfOxOrder_parent
         $oArtSumm->run($oPdf);
         $siteH += $iHeight + 8;
 
-        $oPdf->text(15, $siteH, $this->translate('ORDER_OVERVIEW_PDF_GREETINGS'));
-
-        //order remark
-        $oPdf->setFont($oPdfBlock->getFont(), '', 10);
-        if ($this->oxorder__oxdeladdinfo->value) {
-            $oPdf->text(15, $siteH + 10, $this->translate('ORDER_OVERVIEW_PDF_ADDINFO') . $this->oxorder__oxdeladdinfo->getRawValue());
+        // if content is too close to bottom of the page add a new one
+        if ($siteH > 215) {
+            $iTop = $this->_addNewPage($oPdf);
+            $siteH = $iTop + 8;
+        } else {
+            $siteH += 16;
         }
+
+        if (strlen($this->oxorder__oxtrackcode->value) > 0) {
+            $oPdf->text(15, $siteH, $this->translate('ORDER_MAIN_TRACKCODE') . ':');
+            $siteH += 8;
+            $oPdf->setFont($oPdfBlock->getFont(), '', 20);
+            $oPdf->text(15, $siteH, $this->oxorder__oxtrackcode->value);
+            $siteH += 8;
+        }
+
+        if (strlen($this->oxorder__oxbillfon->value) > 0) {
+            $oPdf->setFont($oPdfBlock->getFont(), '', 10);
+            $oPdf->text(15, $siteH, $this->translate('GENERAL_TELEPHONE'));
+            $siteH += 8;
+            $oPdf->setFont($oPdfBlock->getFont(), '', 20);
+            $oPdf->text(15, $siteH, $this->oxorder__oxbillfon->value);
+            $siteH += 8;
+        }
+
+        if ((strlen($this->oxorder__oxremark->value) > 0) &&
+            ($this->oxorder__oxremark->value != $this->translate('HERE_YOU_CAN_ENTER_MESSAGE'))
+        ) {
+            $oPdf->setFont($oPdfBlock->getFont(), 'B', 10);
+            $oPdf->text(15, $siteH, $this->translate('GENERAL_REMARK') . ':');
+            $siteH += 6;
+            $oPdf->setFont($oPdfBlock->getFont(), '', 10);
+            $siteH = $this->multilineText(
+                $oPdf,
+                15,
+                $siteH,
+                $this->oxorder__oxremark->value,
+            );
+            $siteH += 8;
+        }
+
+        $oPdf->setFont($oPdfBlock->getFont(), 'I', 10);
+        $siteH = $this->multilineText($oPdf, 15, $siteH, $this->translate('ORDER_OVERVIEW_PDF_GREETINGS'));
+
+        // if content is too close to bottom of the page add a new one
+        if ($siteH > 215) {
+            $iTop = $this->_addNewPage($oPdf);
+            $siteH = $iTop + 8;
+        } else {
+            $siteH += 16;
+        }
+        $oPdf->setFont($oPdfBlock->getFont(), 'B', 11);
+        $oPdf->text(15, $siteH, 'Hinweise:');
+
+        $oPdf->setFont($oPdfBlock->getFont(), 'B', 10);
+        $siteH += 6;
+        $oPdf->text(
+            15,
+            $siteH,
+            'Bitte geben Sie bei Überweisungen im Verwendungszweck Ihre Bestellnummer an: ' . $this->oxorder__oxordernr->value
+        );
+
+        $oPdf->setFont($oPdfBlock->getFont(), '', 10);
+        $siteH += 6;
+        $oPdf->text(
+            15,
+            $siteH,
+            'Die Lieferung erfolgt frei Bordsteinkante. Die Lieferadresse muss mit einem 25 Tonnen LKW frei befahrbar sein.'
+        );
+        $siteH += 4;
+        $oPdf->text(15, $siteH, 'Ab Bordsteinkante erfolgt die Lieferung auf eigene Gefahr.');
+        $siteH += 4;
+        $oPdf->text(15, $siteH, 'Für eventuelle Schäden übernehmen wir keine Haftung.');
+
+        $siteH += 6;
+        $oPdf->text(15, $siteH, 'Selbstabholung erfolgt auf eigene Gefahr.');
+
+        $siteH += 12;
+        $oPdf->text(
+            15,
+            $siteH,
+            'Ware ordnungsgemäß und vollständig erhalten                   Unterschrift:_____________________________'
+        );
+    }
+
+    /**
+     * Adds multiple lines of text splitted after x chars
+     *
+     * @param InvoicepdfPDF $oPdf current PDF doc
+     * @param int $iLPos left position
+     * @param int $iLHeight height
+     * @param string $sString string to write
+     * @return int the new position
+     */
+    public function multilineText($oPdf, $iLPos, $iLHeight, $sString)
+    {
+        $sString = str_replace("\r\n", "\n", $sString);
+        $paragraphs = explode("\n", $sString);
+        $maxLineLength = 90;
+        $paragraphMargin = 2;
+        $lineHeight = 4;
+
+        $fontFamily = $oPdf->getFontFamily();
+        $fontStyle = $oPdf->getFontStyle();
+        $fontSize = $oPdf->getFontSizePt();
+
+        foreach ($paragraphs as $paragraph) {
+            $words = explode(' ', $paragraph);
+            $linelength = 0;
+            $lineWords = [];
+            $lines = [];
+
+            foreach ($words as $wordIndex => $word) {
+                $isLastWord = $wordIndex + 1 == count($words);
+                $wordLength = strlen($word);
+                $newLineLength = $linelength + $wordLength;
+                $lineWords[] = $word;
+
+                if ((($newLineLength > $maxLineLength) || $isLastWord) && (count($lineWords))) {
+                    $lines[] = implode(' ', $lineWords);
+                    $linelength = 0;
+                    $lineWords = [];
+                }
+
+                $linelength += $wordLength;
+            }
+
+            $paragraphHeight = count($lines) * $lineHeight;
+
+            // If paragraph does not fit on current page create a new one
+            if (($iLHeight + $paragraphHeight) > 270) {
+                $iTop = $this->_addNewPage($oPdf);
+                $iLHeight = $iTop + 8;
+
+                // After creating a new page we have to re-set the fong
+                $oPdf->setFont($fontFamily, $fontStyle, $fontSize);
+            }
+
+            foreach ($lines as $line) {
+                $oPdf->text($iLPos, $iLHeight, $line);
+                $iLHeight += $lineHeight;
+            }
+
+            $iLHeight += $paragraphMargin;
+        }
+
+        return $iLHeight;
     }
 
     /**    * Generating delivery note pdf.
